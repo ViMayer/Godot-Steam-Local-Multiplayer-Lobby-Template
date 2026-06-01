@@ -1,0 +1,153 @@
+[gd_scene format=3 uid="uid://d4ejx402qfkwa"]
+
+[ext_resource type="Script" uid="uid://b6b6v13a7iqr8" path="res://scenes/ui/steam_friends_list/invite_popup/invite_popup.gd" id="1_henrq"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_eisgd"]
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 4.0
+bg_color = Color(0.07058824, 0.07058824, 0.07058824, 0.4509804)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="InvitePopup" type="Control" unique_id=485546617]
+z_index = 4096
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -848.0
+offset_bottom = 96.0
+grow_horizontal = 0
+mouse_filter = 1
+script = ExtResource("1_henrq")
+
+[node name="RequestTimeoutTimer" type="Timer" parent="." unique_id=1663919387]
+unique_name_in_owner = true
+wait_time = 15.0
+one_shot = true
+
+[node name="Panel" type="Panel" parent="." unique_id=1159749195]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_eisgd")
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=2024650838]
+layout_mode = 0
+offset_right = 716.0
+offset_bottom = 96.0
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 12
+
+[node name="VBoxContainer" type="HBoxContainer" parent="Panel/MarginContainer" unique_id=800555259]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HSeparator" type="HSeparator" parent="Panel/MarginContainer/VBoxContainer" unique_id=1521651287]
+modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(16, 0)
+layout_mode = 2
+mouse_filter = 1
+
+[node name="Info" type="Control" parent="Panel/MarginContainer/VBoxContainer" unique_id=1194178532]
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 2
+mouse_filter = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel/MarginContainer/VBoxContainer/Info" unique_id=1121242042]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="InfoLabel" type="RichTextLabel" parent="Panel/MarginContainer/VBoxContainer/Info/MarginContainer" unique_id=1016320370]
+layout_mode = 2
+mouse_filter = 1
+theme_override_font_sizes/normal_font_size = 24
+text = "INVITE RECEIVED"
+scroll_active = false
+autowrap_mode = 1
+vertical_alignment = 1
+
+[node name="SenderName" type="Control" parent="Panel/MarginContainer/VBoxContainer" unique_id=953066211]
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 2
+mouse_filter = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel/MarginContainer/VBoxContainer/SenderName" unique_id=1328507581]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="SenderNameLabel" type="RichTextLabel" parent="Panel/MarginContainer/VBoxContainer/SenderName/MarginContainer" unique_id=79421258]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 1
+theme_override_font_sizes/normal_font_size = 24
+text = "PLAYER"
+scroll_active = false
+autowrap_mode = 1
+vertical_alignment = 1
+
+[node name="Actions" type="Control" parent="Panel/MarginContainer/VBoxContainer" unique_id=680258066]
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 2
+mouse_filter = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel/MarginContainer/VBoxContainer/Actions" unique_id=556413982]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer/Actions/MarginContainer" unique_id=1620394780]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="CloseButton" type="Button" parent="Panel/MarginContainer/VBoxContainer/Actions/MarginContainer/HBoxContainer" unique_id=939737353]
+modulate = Color(1, 0, 0, 1)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_default_cursor_shape = 2
+text = "CLOSE"
+autowrap_mode = 1
+
+[node name="AcceptButton" type="Button" parent="Panel/MarginContainer/VBoxContainer/Actions/MarginContainer/HBoxContainer" unique_id=91353856]
+modulate = Color(0, 1, 0, 1)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_default_cursor_shape = 2
+text = "JOIN"
+autowrap_mode = 1
+
+[connection signal="pressed" from="Panel/MarginContainer/VBoxContainer/Actions/MarginContainer/HBoxContainer/CloseButton" to="." method="_on_close_button_pressed"]
+[connection signal="pressed" from="Panel/MarginContainer/VBoxContainer/Actions/MarginContainer/HBoxContainer/AcceptButton" to="." method="_on_join_button_pressed"]

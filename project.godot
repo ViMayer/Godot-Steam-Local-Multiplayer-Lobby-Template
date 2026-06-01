@@ -1,0 +1,93 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Steam/Local Multiplayer Lobby Template"
+run/main_scene="uid://dx4y5fqwj1u30"
+config/features=PackedStringArray("4.6", "Forward Plus")
+config/icon="uid://cdbq3kb2y7mep"
+
+[asset_placer]
+
+general/preview_material="res://addons/asset_placer/utils/preview_material.tres"
+general/plane_material="res://addons/asset_placer/ui/plane_preview/plane_preview_material.tres"
+general/asset_library_path="user://asset_library.json"
+
+[audio]
+
+buses/default_bus_layout=""
+
+[autoload]
+
+Online="*uid://c8kw5ggqk6vdo"
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/initial_position_type=3
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/vsync/vsync_mode=0
+
+[editor_plugins]
+
+enabled=PackedStringArray()
+
+[file_customization]
+
+folder_colors={
+"res://common/": "teal",
+"res://scenes/": "blue",
+"res://scenes/ui/": "green",
+"res://scripts/globals/": "red"
+}
+
+[input]
+
+toggle_fullscreen={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194342,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
+, Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":true,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194309,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
+]
+}
+cicle_player_hud={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":72,"key_label":0,"unicode":104,"location":0,"echo":false,"script":null)
+]
+}
+
+[physics]
+
+common/physics_jitter_fix=0.1
+3d/physics_engine="Jolt Physics"
+common/physics_interpolation=true
+
+[rendering]
+
+rendering_device/driver.windows="d3d12"
+anti_aliasing/quality/msaa_2d=3
+anti_aliasing/quality/msaa_3d=3
+anti_aliasing/quality/screen_space_aa=2
+anti_aliasing/quality/use_taa=true
+reflections/quality/use_taa=false
+reflections/quality/screen_space_aa=0
+reflections/quality/msaa_2d=0
+reflections/quality/msaa_3d=0
+
+[steam]
+
+initialization/app_id=0
+initialization/initialize_on_startup=false
+initialization/embed_callbacks=false
+multiplayer_peer/max_channels=4

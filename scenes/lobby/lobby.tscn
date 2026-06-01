@@ -1,0 +1,688 @@
+[gd_scene format=3 uid="uid://dx4y5fqwj1u30"]
+
+[ext_resource type="Script" uid="uid://b4cbqu3mlh15u" path="res://scenes/lobby/lobby.gd" id="1_1ig7j"]
+[ext_resource type="PackedScene" uid="uid://bwggrf7sbmkcv" path="res://scenes/player_character/player_character_scene.tscn" id="2_jekxk"]
+[ext_resource type="PackedScene" uid="uid://debd8dnm3d5ik" path="res://scenes/lobby/main_menu_ui.tscn" id="2_ukx7c"]
+[ext_resource type="Material" uid="uid://cmlreoo2qwhp4" path="res://addons/JehenoAdvancedFirstPersonController(Modified)/Arts/structure_material_black.tres" id="3_5l4x7"]
+[ext_resource type="Material" uid="uid://3ub3li5nvjsw" path="res://addons/JehenoAdvancedFirstPersonController(Modified)/Arts/structure_material_orange.tres" id="4_a0ps3"]
+[ext_resource type="PackedScene" uid="uid://b84t3rpy4cau8" path="res://addons/JehenoAdvancedFirstPersonController(Modified)/MovementModifiers/jumpPads/verticalJumpPad/vertical_jump_pad_scene.tscn" id="5_tsrmh"]
+[ext_resource type="PackedScene" uid="uid://ct3rwravhrwk1" path="res://addons/JehenoAdvancedFirstPersonController(Modified)/MovementModifiers/jumpPads/directionalJumpPad/directional_jump_pad_scene.tscn" id="6_sekq8"]
+[ext_resource type="PackedScene" uid="uid://djqwgcp3ehij1" path="res://addons/JehenoAdvancedFirstPersonController(Modified)/MovementModifiers/slipperyZone/slippery_zone_scene.tscn" id="7_5nxcp"]
+[ext_resource type="PackedScene" uid="uid://d4gavwq81shmv" path="res://addons/JehenoAdvancedFirstPersonController(Modified)/MovementModifiers/conveyorZone/conveyor_zone_scene.tscn" id="8_e624k"]
+[ext_resource type="PackedScene" uid="uid://da2jeeyxxp2s2" path="res://scenes/ui/steam_friends_list/steam_friends_list.tscn" id="12_a0ps3"]
+[ext_resource type="FontFile" uid="uid://cfsikuv13gwnw" path="res://common/fonts/Kurland.ttf" id="13_1xog8"]
+[ext_resource type="PackedScene" uid="uid://d4ejx402qfkwa" path="res://scenes/ui/steam_friends_list/invite_popup/invite_popup.tscn" id="13_7ewij"]
+[ext_resource type="PackedScene" uid="uid://ctf1yf3optph8" path="res://addons/JehenoAdvancedFirstPersonController(Modified)/MovementModifiers/gravityZone/gravity_zone_scene.tscn" id="13_y2lj0"]
+
+[sub_resource type="Shader" id="Shader_oe3ox"]
+code = "shader_type sky;
+
+uniform sampler2D clouds_sampler : filter_linear_mipmap;
+uniform vec3 top_color : source_color = vec3(1.0);
+uniform vec3 bottom_color : source_color = vec3(1.0);
+const float sun_radius = 0.08;
+uniform vec3 sun_scatter : source_color = vec3(1.0);
+uniform float stars_opacity : hint_range(0.0, 5.0, 0.1) = 0.0;
+
+// Voronoi method credit:
+// The MIT License
+// Copyright © 2013 Inigo Quilez
+// https://www.shadertoy.com/view/ldl3Dl
+
+vec3 hash( vec3 x ){
+	x = vec3( dot(x,vec3(127.1,311.7, 74.7)),
+			  dot(x,vec3(269.5,183.3,246.1)),
+			  dot(x,vec3(113.5,271.9,124.6)));
+	return fract(sin(x)*43758.5453123);
+}
+
+vec3 voronoi( in vec3 x ){
+	vec3 p = floor( x );
+	vec3 f = fract( x );
+	
+	float id = 0.0;
+	vec2 res = vec2( 100.0 );
+	for( int k=-1; k<=1; k++ )
+	for( int j=-1; j<=1; j++ )
+	for( int i=-1; i<=1; i++ ) {
+		vec3 b = vec3( float(i), float(j), float(k) );
+		vec3 r = vec3( b ) - f + hash( p + b );
+		float d = dot( r, r );
+		if( d < res.x ) {
+			id = dot( p+b, vec3(1.0,57.0,113.0 ) );
+			res = vec2( d, res.x );
+		} else if( d < res.y ) {
+			res.y = d;
+		}
+    }
+    return vec3( sqrt( res ), abs(id) );
+}
+
+void sky() {
+	float clamped_light_y = clamp(LIGHT0_DIRECTION.y, 0.0, 1.0);
+	vec3 sky_gradient = mix(bottom_color.rgb, top_color.rgb, clamp(EYEDIR.y, 0.0, 1.0));
+	float sun_position = distance(EYEDIR.xyz, LIGHT0_DIRECTION);
+	float sun_mask_edge = smoothstep(sun_radius, sun_radius * 0.9, sun_position) * 0.2;
+	float sun_mask = smoothstep(sun_radius * 0.7, sun_radius * 0.65, sun_position) * 0.8;
+	float sun_color = (sun_mask_edge + sun_mask) * LIGHT0_ENERGY;
+	float horizon_mask = abs(EYEDIR.y * 1.0);
+	vec3 sunset_color = sun_scatter * (1.0 - horizon_mask);
+	COLOR = sky_gradient + sunset_color + (sun_color * clamp(EYEDIR.y * 4.0, 0.0, 1.0));
+	// Stars
+	if(stars_opacity > 0.0){
+		vec2 stars = voronoi(EYEDIR * 25.0).xz;
+		COLOR.rgb += smoothstep(0.025 + ((1.0 + sin(TIME + stars.y)) / 2.0) * 0.05, 0.0, stars.x) * stars_opacity;
+	}
+	// Clouds
+	vec2 cloud_uv = EYEDIR.xz / EYEDIR.y;
+	float cloud_mask = texture(clouds_sampler, cloud_uv * 0.05 + TIME * 0.001).x;
+	cloud_mask *= step(SKY_COORDS.y, 0.5);
+
+	COLOR.rgb = mix(
+		COLOR.rgb,
+		vec3(1.0),
+		smoothstep(0.75, 0.85, cloud_mask)
+	);
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_xw4ak"]
+noise_type = 0
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_83dbq"]
+noise = SubResource("FastNoiseLite_xw4ak")
+seamless = true
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_kllse"]
+shader = SubResource("Shader_oe3ox")
+shader_parameter/clouds_sampler = SubResource("NoiseTexture2D_83dbq")
+shader_parameter/top_color = Color(2.8878452e-07, 0.524396, 0.5726978, 1)
+shader_parameter/bottom_color = Color(0, 0.3671047, 0.65850776, 1)
+shader_parameter/sun_scatter = Color(0.17254902, 0.6, 1, 1)
+shader_parameter/stars_opacity = 0.0
+
+[sub_resource type="Sky" id="Sky_pvqiu"]
+sky_material = SubResource("ShaderMaterial_kllse")
+
+[sub_resource type="Environment" id="Environment_7ewij"]
+background_mode = 2
+background_color = Color(0.8, 0.913725, 1, 1)
+sky = SubResource("Sky_pvqiu")
+ambient_light_source = 3
+ambient_light_color = Color(1, 1, 1, 1)
+reflected_light_source = 2
+tonemap_mode = 2
+sdfgi_use_occlusion = true
+glow_enabled = true
+glow_levels/1 = 4.15
+glow_levels/2 = 2.97
+glow_bloom = 0.1
+fog_light_color = Color(1, 1, 1, 1)
+fog_density = 0.005
+fog_aerial_perspective = 1.0
+fog_sky_affect = 0.612
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.005
+
+[sub_resource type="Curve3D" id="Curve3D_yp3dt"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 17.3, 0, 0, 16, 0, -14, 0, 0, 0, 0, 0, 0, 32, 0, -28),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[sub_resource type="Curve3D" id="Curve3D_37orx"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 17.3, 0, 0, 16, 0, -14, 0, 0, 0, 0, 0, 0, 32, 0, -28),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[sub_resource type="Curve3D" id="Curve3D_cx3k0"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 17.3, 0, 0, 16, 0, -14, 0, 0, 0, 0, 0, 0, 32, 0, -28),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[sub_resource type="GDScript" id="GDScript_7ewij"]
+resource_name = "in_game_ui_script"
+script/source = "extends Control
+
+func _process(_delta: float) -> void: if visible and Input.mouse_mode != Input.MOUSE_MODE_VISIBLE: visible = false
+"
+
+[node name="Lobby" type="Node" unique_id=1405618158 node_paths=PackedStringArray("multiplayer_spawner", "players_container")]
+script = ExtResource("1_1ig7j")
+player_scene = ExtResource("2_jekxk")
+multiplayer_spawner = NodePath("World3D/MultiplayerSpawner")
+players_container = NodePath("World3D/PlayersContainer")
+
+[node name="World3D" type="Node3D" parent="." unique_id=2113462041]
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="World3D" unique_id=573657656]
+spawn_path = NodePath("../PlayersContainer")
+
+[node name="PlayersContainer" type="Node3D" parent="World3D" unique_id=584106853]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.9949656, 0)
+
+[node name="Environment" type="Node3D" parent="World3D" unique_id=1452747636]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="World3D/Environment" unique_id=744712042]
+environment = SubResource("Environment_7ewij")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="World3D/Environment" unique_id=1231583367]
+transform = Transform3D(-0.866024, -0.433016, 0.250001, 0, 0.499998, 0.866026, -0.500003, 0.749999, -0.43301, -22, 101, 4)
+shadow_enabled = true
+
+[node name="Camera3D" type="Camera3D" parent="World3D/Environment" unique_id=722133086]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11.991097, 0)
+
+[node name="Map" type="Node3D" parent="World3D" unique_id=1497554479]
+
+[node name="CSGBox3D" type="CSGBox3D" parent="World3D/Map" unique_id=409452827]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.923315, 0, 15.243763)
+use_collision = true
+collision_mask = 2
+size = Vector3(400, 1, 400)
+material = ExtResource("3_5l4x7")
+
+[node name="CSGBox3D11" type="CSGBox3D" parent="World3D/Map" unique_id=826954015]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -166.15335, 0, 15.243763)
+use_collision = true
+collision_mask = 2
+size = Vector3(5, 15, 400)
+material = ExtResource("3_5l4x7")
+
+[node name="CSGBox3D12" type="CSGBox3D" parent="World3D/Map" unique_id=2004963627]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 233.84665, 0, 15.243763)
+use_collision = true
+collision_mask = 2
+size = Vector3(5, 15, 400)
+material = ExtResource("3_5l4x7")
+
+[node name="CSGBox3D13" type="CSGBox3D" parent="World3D/Map" unique_id=1483791124]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 33.846657, 0, -184.75624)
+use_collision = true
+collision_mask = 2
+size = Vector3(5, 15, 400)
+material = ExtResource("3_5l4x7")
+
+[node name="CSGBox3D14" type="CSGBox3D" parent="World3D/Map" unique_id=490239584]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 33.84664, 0, 215.24376)
+use_collision = true
+collision_mask = 2
+size = Vector3(5, 15, 400)
+material = ExtResource("3_5l4x7")
+
+[node name="CSGBox3D7" type="CSGBox3D" parent="World3D/Map" unique_id=559911598]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48.873074, -20.9545, 110.64227)
+use_collision = true
+collision_mask = 2
+size = Vector3(17, 1, 41)
+material = ExtResource("3_5l4x7")
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="World3D/Map" unique_id=1832369105]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36.121075, 2.6962411, -1.3577232)
+use_collision = true
+collision_mask = 2
+size = Vector3(7.497, 0.5, 7)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGBox3D8" type="CSGBox3D" parent="World3D/Map" unique_id=761565465]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.183897, 6.2479196, 50.37212)
+use_collision = true
+collision_mask = 2
+size = Vector3(9.655439, 0.5, 6.3674316)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGBox3D9" type="CSGBox3D" parent="World3D/Map" unique_id=1199450757]
+transform = Transform3D(0.5591495, 0, 0.8290668, 0, 1, 0, -0.8290668, 0, 0.5591495, 2.0001082, 8.865175, 36.569218)
+use_collision = true
+collision_mask = 2
+size = Vector3(9.908728, 0.5, 5.4303284)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGBox3D10" type="CSGBox3D" parent="World3D/Map" unique_id=16350400]
+transform = Transform3D(0.27041572, 0, 0.96274376, 0, 1, 0, -0.96274376, 0, 0.27041572, 14.271387, 8.564655, 15.087238)
+use_collision = true
+collision_mask = 2
+size = Vector3(9.908728, 0.5, 5.4303284)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="World3D/Map" unique_id=35512554]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39.369865, 1.4746335, 1.6422768)
+use_collision = true
+collision_mask = 2
+size = Vector3(1, 2, 1)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="World3D/Map" unique_id=873866948]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39.369865, 1.4746335, -4.357723)
+use_collision = true
+collision_mask = 2
+size = Vector3(1, 2, 1)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGBox3D5" type="CSGBox3D" parent="World3D/Map" unique_id=798028586]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32.888523, 1.4746335, -4.357723)
+use_collision = true
+collision_mask = 2
+size = Vector3(1, 2, 1)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGBox3D6" type="CSGBox3D" parent="World3D/Map" unique_id=1038432260]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32.888523, 1.4508518, 1.6422768)
+use_collision = true
+collision_mask = 2
+size = Vector3(1, 2, 1)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGPolygon1" type="CSGPolygon3D" parent="World3D/Map" unique_id=616293092]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 3, -33.873074, 1.5, 43.642277)
+use_collision = true
+collision_mask = 2
+polygon = PackedVector2Array(-6, -1, 3.5, 9, 3.5, -1)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGPolygon5" type="CSGPolygon3D" parent="World3D/Map" unique_id=1061515333]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 4, -33.873074, 1.5, 35.642277)
+use_collision = true
+collision_mask = 2
+polygon = PackedVector2Array(-6, -1, -1, 2, 5, -1)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGPolygon6" type="CSGPolygon3D" parent="World3D/Map" unique_id=1288657490]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 4, -33.873074, 1.5, 11.642277)
+use_collision = true
+collision_mask = 2
+polygon = PackedVector2Array(-6, -2, -6, 1, 4, 1)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGPolygon2" type="CSGPolygon3D" parent="World3D/Map" unique_id=216797700]
+transform = Transform3D(0.9999999, 0, -9.5367415e-07, 0, 1, 0, 2.3841854e-07, 0, 3.9999995, -54.073906, 1.5, -49.705936)
+use_collision = true
+collision_mask = 2
+polygon = PackedVector2Array(-6, -1, 4, 5, 4, -1)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGPolygon4" type="CSGPolygon3D" parent="World3D/Map" unique_id=1820974366]
+transform = Transform3D(0.9999999, 0, -9.5367415e-07, 0, 1, 0, 2.3841854e-07, 0, 3.9999995, -50.078888, 0.5, -49.90566)
+use_collision = true
+collision_mask = 2
+polygon = PackedVector2Array(0, 0, 0, 6, 8, 6, 1, 5)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGPolygon3" type="CSGPolygon3D" parent="World3D/Map" unique_id=2030512597]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 6, -33.873074, 1.5, 63.642277)
+use_collision = true
+collision_mask = 2
+polygon = PackedVector2Array(-6, -1, 11, 5, 11, -1)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGPolygon7" type="CSGPolygon3D" parent="World3D/Map" unique_id=819636643]
+transform = Transform3D(-4.37114e-08, 0, 6, 0, 1, 0, -1, 0, -2.62268e-07, -45.873074, -4.49604, 85.13338)
+use_collision = true
+collision_mask = 2
+polygon = PackedVector2Array(-16, -16, 11, 5, 11, 4.9)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="World3D/Map" unique_id=1728093910]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.745829, -1.3117, 48.437176)
+use_collision = true
+collision_mask = 2
+radius = 4.0
+radial_segments = 64
+rings = 12
+material = ExtResource("4_a0ps3")
+
+[node name="CSGCylinder3D3" type="CSGCylinder3D" parent="World3D/Map" unique_id=635828229]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.337027, 1.33529, 67.55087)
+use_collision = true
+collision_mask = 2
+radius = 4.0
+sides = 16
+cone = true
+material = ExtResource("4_a0ps3")
+
+[node name="CSGSphere3D2" type="CSGSphere3D" parent="World3D/Map" unique_id=1651911194]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.288027, -1.3117, 55.406075)
+use_collision = true
+collision_mask = 2
+radius = 4.6
+radial_segments = 6
+rings = 12
+material = ExtResource("4_a0ps3")
+
+[node name="CSGSphere3D4" type="CSGSphere3D" parent="World3D/Map" unique_id=1021671027]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.443929, 0.174119, 62.035378)
+use_collision = true
+collision_mask = 2
+radius = 4.4
+radial_segments = 32
+rings = 12
+material = ExtResource("4_a0ps3")
+
+[node name="MovementModifiers" type="Node3D" parent="World3D/Map" unique_id=1526866532]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -37.373074, 0, 41.142277)
+
+[node name="VerticalJumpPad" parent="World3D/Map/MovementModifiers" unique_id=262465708 instance=ExtResource("5_tsrmh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.378038, 0.69335794, -62.13657)
+
+[node name="DirectionalJumpPad" parent="World3D/Map/MovementModifiers" unique_id=530547081 instance=ExtResource("6_sekq8")]
+transform = Transform3D(-4.3711385e-08, 0, 0.9999999, 0, 1, 0, -0.9999999, 0, -4.3711385e-08, -15.247265, 0.43628693, -71.279396)
+bounce_force = 0.0
+overrided_direction = Vector3(0, 28, 45)
+
+[node name="SlipperyZone" parent="World3D/Map/MovementModifiers" unique_id=4139026 instance=ExtResource("7_5nxcp")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.446507, 1.0000002, -76.42476)
+
+[node name="ConveyorZone" parent="World3D/Map/MovementModifiers" unique_id=410291651 instance=ExtResource("8_e624k")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.437664, 1.0000002, -66.41208)
+
+[node name="GravityPad" parent="World3D/Map/MovementModifiers" unique_id=151161174 instance=ExtResource("13_y2lj0")]
+transform = Transform3D(5, 0, 0, 0, 15, 0, 0, 0, 5, 7.9086685, 0, -92.63604)
+
+[node name="GravityPad2" parent="World3D/Map/MovementModifiers" unique_id=1853261604 instance=ExtResource("13_y2lj0")]
+transform = Transform3D(2, 0, 0, 0, 15, 0, 0, 0, 2, 39.67492, 0, -19.233816)
+gravity_multiplier = 5.0
+
+[node name="GravityPad3" parent="World3D/Map/MovementModifiers" unique_id=398802941 instance=ExtResource("13_y2lj0")]
+transform = Transform3D(2, 0, 0, 0, 15, 0, 0, 0, 2, 52.993164, 0, -10.917236)
+
+[node name="WallrunZone" type="Node3D" parent="World3D/Map" unique_id=1421314525]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 62.626926, 6, 13.142277)
+
+[node name="CSGBox3D12" type="CSGBox3D" parent="World3D/Map/WallrunZone" unique_id=468639172]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -16.029999, -1.223, -21.492886)
+use_collision = true
+collision_layer = 5
+collision_mask = 2
+size = Vector3(28.258972, 9.499871, 1)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGBox3D17" type="CSGBox3D" parent="World3D/Map/WallrunZone" unique_id=1463651879]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -8.029999, -1.223, -0.3633995)
+use_collision = true
+collision_layer = 5
+collision_mask = 2
+size = Vector3(34, 9.499871, 1)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGBox3D15" type="CSGBox3D" parent="World3D/Map/WallrunZone" unique_id=1596224320]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.313904, -1.223, -50.09767)
+use_collision = true
+collision_layer = 5
+collision_mask = 2
+size = Vector3(36.428833, 9.499871, 1)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGBox3D16" type="CSGBox3D" parent="World3D/Map/WallrunZone" unique_id=1415263092]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.02832, -1.223, -42.09767)
+use_collision = true
+collision_layer = 5
+collision_mask = 2
+size = Vector3(31, 9.499871, 1)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGBox3D13" type="CSGBox3D" parent="World3D/Map/WallrunZone" unique_id=135129493]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 50.97, -1.223, -0.635128)
+use_collision = true
+collision_layer = 5
+collision_mask = 2
+size = Vector3(66.15869, 9.499871, 1)
+material = ExtResource("4_a0ps3")
+
+[node name="CSGBox3D14" type="CSGBox3D" parent="World3D/Map/WallrunZone" unique_id=1959531685]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 46.458588, -1.223, 1.2855263)
+use_collision = true
+collision_layer = 5
+collision_mask = 2
+size = Vector3(36, 9.499871, 1)
+material = ExtResource("4_a0ps3")
+
+[node name="Path3D" type="Path3D" parent="World3D/Map/WallrunZone" unique_id=173106252]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.468178, -6, -63.6)
+curve = SubResource("Curve3D_yp3dt")
+
+[node name="CSGPolygon3D" type="CSGPolygon3D" parent="World3D/Map/WallrunZone/Path3D" unique_id=388118330]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0)
+use_collision = true
+collision_layer = 5
+collision_mask = 2
+polygon = PackedVector2Array(0, 0, 0, 9.525, 1, 9.525, 1, 0)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 1.0
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+material = ExtResource("4_a0ps3")
+
+[node name="Path3D2" type="Path3D" parent="World3D/Map/WallrunZone" unique_id=159319427]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.46817, -6, -17.599998)
+curve = SubResource("Curve3D_37orx")
+
+[node name="CSGPolygon3D" type="CSGPolygon3D" parent="World3D/Map/WallrunZone/Path3D2" unique_id=229703879]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 36, 0, 0)
+use_collision = true
+collision_layer = 5
+collision_mask = 2
+polygon = PackedVector2Array(0, 0, 0, 9.525, 1, 9.525, 1, 0)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 1.0
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+material = ExtResource("4_a0ps3")
+
+[node name="Path3D3" type="Path3D" parent="World3D/Map/WallrunZone" unique_id=1523389354]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.53183, -6, 60.4)
+curve = SubResource("Curve3D_cx3k0")
+
+[node name="CSGPolygon3D" type="CSGPolygon3D" parent="World3D/Map/WallrunZone/Path3D3" unique_id=315263669]
+transform = Transform3D(1, 0, 5.9604645e-08, 0, 1, 0, -5.9604645e-08, 0, 1, 36, 0, 0)
+use_collision = true
+collision_layer = 5
+collision_mask = 2
+polygon = PackedVector2Array(0, 0, 0, 9.525, 1, 9.525, 1, 0)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 1.0
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+material = ExtResource("4_a0ps3")
+
+[node name="Path3D4" type="Path3D" parent="World3D/Map/WallrunZone" unique_id=1739426809]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -76.53183, -6, 44.4)
+curve = SubResource("Curve3D_cx3k0")
+
+[node name="CSGPolygon3D" type="CSGPolygon3D" parent="World3D/Map/WallrunZone/Path3D4" unique_id=1083307614]
+transform = Transform3D(1, 0, 5.9604645e-08, 0, 1, 0, -5.9604645e-08, 0, 1, 36, 0, 0)
+use_collision = true
+collision_layer = 5
+collision_mask = 2
+polygon = PackedVector2Array(0, 0, 0, 9.525, 1, 9.525, 1, 0)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 1.0
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+material = ExtResource("4_a0ps3")
+
+[node name="Path3D5" type="Path3D" parent="World3D/Map/WallrunZone" unique_id=1487214423]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.53183, -6, 14.400002)
+curve = SubResource("Curve3D_cx3k0")
+
+[node name="CSGPolygon3D" type="CSGPolygon3D" parent="World3D/Map/WallrunZone/Path3D5" unique_id=715684345]
+transform = Transform3D(1.5893256e-08, 0, -1, 0, 1, 0, 1, 0, 1.5893256e-08, 36, 0, 0)
+use_collision = true
+collision_layer = 5
+collision_mask = 2
+polygon = PackedVector2Array(0, 0, 0, 9.525, 1, 9.525, 1, 0)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 1.0
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+material = ExtResource("4_a0ps3")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=883366865]
+
+[node name="UI" type="Control" parent="CanvasLayer" unique_id=1670706487]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="InGameUI" type="Control" parent="CanvasLayer/UI" unique_id=334839678]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = SubResource("GDScript_7ewij")
+
+[node name="Panel" type="Panel" parent="CanvasLayer/UI/InGameUI" unique_id=1092246775]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="SteamFriendsList" parent="CanvasLayer/UI/InGameUI/Panel" unique_id=785300720 instance=ExtResource("12_a0ps3")]
+unique_name_in_owner = true
+layout_mode = 0
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_right = 637.0
+offset_bottom = 1080.0
+grow_horizontal = 1
+grow_vertical = 1
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/UI/InGameUI/Panel" unique_id=992869685]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -651.0
+offset_bottom = 544.0
+grow_horizontal = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_constants/margin_top = 64
+theme_override_constants/margin_right = 64
+
+[node name="Control" type="Control" parent="CanvasLayer/UI/InGameUI/Panel/MarginContainer" unique_id=581376372]
+layout_mode = 2
+
+[node name="ExitLobbyButton" type="Button" parent="CanvasLayer/UI/InGameUI/Panel/MarginContainer/Control" unique_id=1835734236]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.4787053
+anchor_top = -0.022916667
+anchor_right = 1.0698466
+anchor_bottom = 0.14583333
+grow_horizontal = 0
+size_flags_vertical = 0
+mouse_default_cursor_shape = 2
+theme_override_constants/outline_size = 32
+theme_override_fonts/font = ExtResource("13_1xog8")
+theme_override_font_sizes/font_size = 32
+text = "EXIT LOBBY"
+metadata/_edit_use_anchors_ = true
+
+[node name="LobbyInfoButton" type="Button" parent="CanvasLayer/UI/InGameUI/Panel/MarginContainer/Control" unique_id=902977002]
+unique_name_in_owner = true
+show_behind_parent = true
+custom_minimum_size = Vector2(347, 81)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.4787053
+anchor_top = 0.21666667
+anchor_right = 1.0698466
+anchor_bottom = 0.43958333
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+mouse_default_cursor_shape = 2
+theme_override_constants/outline_size = 32
+theme_override_fonts/font = ExtResource("13_1xog8")
+theme_override_font_sizes/font_size = 32
+text = "IP/Lobby ID: 
+xxx.x.x.x"
+metadata/_edit_use_anchors_ = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/UI/InGameUI/Panel/MarginContainer/Control" unique_id=1781865230]
+layout_mode = 0
+offset_right = 178.0
+offset_bottom = 42.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_constants/separation = 64
+
+[node name="MainMenuUI" parent="CanvasLayer/UI" unique_id=1236732426 instance=ExtResource("2_ukx7c")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+mouse_filter = 2
+
+[node name="InvitePopup" parent="CanvasLayer/UI" unique_id=485546617 instance=ExtResource("13_7ewij")]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -424.0
+offset_top = 54.0
+offset_right = 424.0
+offset_bottom = 150.0
+grow_horizontal = 2
+pivot_offset_ratio = Vector2(0.5, 0.5)
+mouse_filter = 2
+
+[connection signal="pressed" from="CanvasLayer/UI/InGameUI/Panel/MarginContainer/Control/ExitLobbyButton" to="." method="_on_exit_lobby_button_pressed"]
+[connection signal="pressed" from="CanvasLayer/UI/InGameUI/Panel/MarginContainer/Control/LobbyInfoButton" to="." method="_on_lobby_info_button_pressed"]

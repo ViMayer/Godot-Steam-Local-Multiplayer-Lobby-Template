@@ -1,0 +1,72 @@
+[gd_scene format=3 uid="uid://da2jeeyxxp2s2"]
+
+[ext_resource type="Script" uid="uid://d1gic0xquoc58" path="res://scenes/ui/steam_friends_list/steam_friends_list.gd" id="1_8qy6i"]
+[ext_resource type="Theme" uid="uid://dn0u1btlh77ki" path="res://scenes/ui/steam_friends_list/aestro_theme/aestro.tres" id="1_js7yv"]
+[ext_resource type="PackedScene" uid="uid://bk6f6a2dc0554" path="res://scenes/ui/steam_friends_list/steam_friend_card/steam_friend_card.tscn" id="2_goexq"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_js7yv"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0u4f1"]
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 4.0
+bg_color = Color(0.07058824, 0.07058824, 0.07058824, 0.36078432)
+
+[node name="SteamFriendsList" type="Panel" unique_id=785300720 node_paths=PackedStringArray("cards_container")]
+custom_minimum_size = Vector2(600, 1080)
+anchors_preset = -1
+anchor_right = 0.31458333
+anchor_bottom = 1.0
+offset_right = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_js7yv")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_js7yv")
+script = ExtResource("1_8qy6i")
+friend_item_scene = ExtResource("2_goexq")
+cards_container = NodePath("MarginContainer/ScrollContainer/CardsContainer")
+
+[node name="Panel" type="Panel" parent="." unique_id=1600678542]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_0u4f1")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1796710574]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer" unique_id=268761855]
+layout_mode = 2
+mouse_filter = 2
+mouse_default_cursor_shape = 9
+theme_override_colors/scroll_hint_vertical_color = Color(1, 0, 0, 1)
+horizontal_scroll_mode = 0
+
+[node name="CardsContainer" type="VBoxContainer" parent="MarginContainer/ScrollContainer" unique_id=107383621]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="SteamFriendCard" parent="MarginContainer/ScrollContainer/CardsContainer" unique_id=695109830 instance=ExtResource("2_goexq")]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="SteamFriendCard2" parent="MarginContainer/ScrollContainer/CardsContainer" unique_id=138637160 instance=ExtResource("2_goexq")]
+layout_mode = 2
+size_flags_vertical = 4

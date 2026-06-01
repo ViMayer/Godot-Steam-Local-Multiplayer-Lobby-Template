@@ -1,0 +1,230 @@
+[gd_scene format=3 uid="uid://bk6f6a2dc0554"]
+
+[ext_resource type="Theme" uid="uid://dn0u1btlh77ki" path="res://scenes/ui/steam_friends_list/aestro_theme/aestro.tres" id="1_33mkw"]
+[ext_resource type="Script" uid="uid://dqhs7sucn72sa" path="res://scenes/ui/steam_friends_list/steam_friend_card/steam_friend_card.gd" id="2_bd51g"]
+[ext_resource type="PackedScene" uid="uid://bvedv4l2tys00" path="res://scenes/ui/steam_friends_list/control_loader/control_loader_effect.tscn" id="3_uogwc"]
+[ext_resource type="Shader" uid="uid://ckfsxb7fc24dh" path="res://scenes/ui/steam_friends_list/control_loader/control_loader_shader.gdshader" id="4_4yogr"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vo1jq"]
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 4.0
+bg_color = Color(0.0690195, 0.0690195, 0.0690195, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rapfq"]
+bg_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 64
+corner_radius_top_right = 64
+corner_radius_bottom_right = 64
+corner_radius_bottom_left = 64
+corner_detail = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cuyoi"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.3366076, 0.33660764, 0.33660752, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_8ocre"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_18jlq"]
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 4.0
+bg_color = Color(0.0690195, 0.0690195, 0.0690195, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.411765, 0.909804, 0.592157, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mqc1g"]
+resource_local_to_scene = true
+shader = ExtResource("4_4yogr")
+shader_parameter/background_color = Color(0.2, 0.2, 0.2, 1)
+shader_parameter/pulse_color = Color(1, 1, 1, 1)
+shader_parameter/alpha_multiplier = 1.0
+shader_parameter/speed = 5.0
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.5
+shader_parameter/smoothness = 1.0
+
+[node name="SteamFriendCard" type="PanelContainer" unique_id=695109830 node_paths=PackedStringArray("avatar_texture_rect", "name_label", "status_control_node", "control_loader_effect", "invite_button", "margin_container", "h_box_container")]
+custom_minimum_size = Vector2(0, 100)
+anchors_preset = -1
+anchor_right = 0.26875
+anchor_bottom = 0.11851852
+offset_right = 6.0
+offset_bottom = 14.666672
+mouse_filter = 2
+mouse_default_cursor_shape = 2
+theme = ExtResource("1_33mkw")
+script = ExtResource("2_bd51g")
+avatar_texture_rect = NodePath("MarginContainer/HBoxContainer/Avatar/MarginContainer/Control/Panel/AvatarTextureRect")
+name_label = NodePath("MarginContainer/HBoxContainer/Name/MarginContainer/NameLabel")
+status_control_node = NodePath("MarginContainer/HBoxContainer/Status/MarginContainer/StatusPanel")
+control_loader_effect = NodePath("ControlLoaderEffect")
+invite_button = NodePath("MarginContainer/HBoxContainer/InviteButton/MarginContainer/InviteButton")
+margin_container = NodePath("MarginContainer")
+h_box_container = NodePath("MarginContainer/HBoxContainer")
+
+[node name="Panel" type="Panel" parent="." unique_id=678350834]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_vo1jq")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=2064463913]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=1984301941]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Status" type="HBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=694388615]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ColorRect" type="ColorRect" parent="MarginContainer/HBoxContainer/Status" unique_id=968094257]
+visible = false
+show_behind_parent = true
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.5820971, 0.5650556, 0, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HBoxContainer/Status" unique_id=990968456]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_right = 12
+
+[node name="StatusPanel" type="Panel" parent="MarginContainer/HBoxContainer/Status/MarginContainer" unique_id=216357582]
+show_behind_parent = true
+custom_minimum_size = Vector2(18, 18)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_rapfq")
+
+[node name="Avatar" type="HBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=1420155827]
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HBoxContainer/Avatar" unique_id=943095155]
+layout_mode = 2
+size_flags_horizontal = 6
+mouse_filter = 2
+theme_override_constants/margin_left = 3
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 3
+theme_override_constants/margin_bottom = 2
+
+[node name="Control" type="Control" parent="MarginContainer/HBoxContainer/Avatar/MarginContainer" unique_id=1275196655]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Panel" type="Panel" parent="MarginContainer/HBoxContainer/Avatar/MarginContainer/Control" unique_id=448480394]
+clip_children = 1
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_cuyoi")
+
+[node name="AvatarTextureRect" type="TextureRect" parent="MarginContainer/HBoxContainer/Avatar/MarginContainer/Control/Panel" unique_id=116589411]
+modulate = Color(1, 1, 1, 0.7882353)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+texture = SubResource("PlaceholderTexture2D_8ocre")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Name" type="HBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=739022393]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HBoxContainer/Name" unique_id=1534140889]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="NameLabel" type="RichTextLabel" parent="MarginContainer/HBoxContainer/Name/MarginContainer" unique_id=1544431682]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/normal_font_size = 20
+text = "PLAYER NAME"
+scroll_active = false
+autowrap_mode = 1
+vertical_alignment = 1
+
+[node name="InviteButton" type="HBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=832165697]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HBoxContainer/InviteButton" unique_id=835122921]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="InviteButton" type="Button" parent="MarginContainer/HBoxContainer/InviteButton/MarginContainer" unique_id=398603834]
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 24
+theme_override_styles/focus = SubResource("StyleBoxFlat_18jlq")
+text = "INVITE"
+
+[node name="ControlLoaderEffect" parent="." unique_id=987368561 node_paths=PackedStringArray("reference_node") instance=ExtResource("3_uogwc")]
+visible = false
+material = SubResource("ShaderMaterial_mqc1g")
+layout_mode = 2
+loader_rect = Object(ColorRect,"unique_name_in_owner":false,"process_mode":0,"process_priority":0,"process_physics_priority":0,"process_thread_group":0,"physics_interpolation_mode":2,"auto_translate_mode":0,"editor_description":"","visible":true,"modulate":Color(1, 1, 1, 1),"self_modulate":Color(1, 1, 1, 1),"show_behind_parent":false,"top_level":false,"clip_children":0,"light_mask":1,"visibility_layer":1,"z_index":1,"z_as_relative":true,"y_sort_enabled":false,"texture_filter":0,"texture_repeat":0,"material":null,"use_parent_material":true,"clip_contents":false,"custom_minimum_size":Vector2(0, 0),"layout_direction":0,"layout_mode":3,"anchors_preset":15,"anchor_left":0.0,"anchor_top":0.0,"anchor_right":1.0,"anchor_bottom":1.0,"offset_left":0.0,"offset_top":0.0,"offset_right":0.0,"offset_bottom":0.0,"grow_horizontal":2,"grow_vertical":2,"rotation":0.0,"scale":Vector2(1, 1),"pivot_offset":Vector2(0, 0),"pivot_offset_ratio":Vector2(0, 0),"size_flags_horizontal":1,"size_flags_vertical":1,"size_flags_stretch_ratio":1.0,"localize_numeral_system":true,"tooltip_text":"","tooltip_auto_translate_mode":0,"focus_neighbor_left":NodePath(""),"focus_neighbor_top":NodePath(""),"focus_neighbor_right":NodePath(""),"focus_neighbor_bottom":NodePath(""),"focus_next":NodePath(""),"focus_previous":NodePath(""),"focus_mode":0,"focus_behavior_recursive":0,"mouse_filter":0,"mouse_behavior_recursive":0,"mouse_force_pass_scroll_events":true,"mouse_default_cursor_shape":0,"shortcut_context":null,"accessibility_name":"","accessibility_description":"","accessibility_live":0,"accessibility_controls_nodes":Array[NodePath]([]),"accessibility_described_by_nodes":Array[NodePath]([]),"accessibility_labeled_by_nodes":Array[NodePath]([]),"accessibility_flow_to_nodes":Array[NodePath]([]),"theme":null,"theme_type_variation":&"","color":Color(1, 1, 1, 1),"script":null)
+
+reference_node = NodePath("../Panel")
+
+[connection signal="pressed" from="MarginContainer/HBoxContainer/InviteButton/MarginContainer/InviteButton" to="." method="_on_invite_button_pressed"]

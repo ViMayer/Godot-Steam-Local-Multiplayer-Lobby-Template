@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://ctf1yf3optph8"]
+
+[ext_resource type="Script" uid="uid://bhpm64i22yova" path="res://addons/JehenoAdvancedFirstPersonController(Modified)/MovementModifiers/gravityZone/gravity_zone_script.gd" id="1_lbe3j"]
+[ext_resource type="Material" uid="uid://bnka266lmacek" path="res://addons/JehenoAdvancedFirstPersonController(Modified)/Arts/structure_material_blue.tres" id="2_i36ro"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_lbe3j"]
+height = 4.0
+radius = 2.5
+
+[node name="GravityPad" type="Area3D" unique_id=151161174]
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("1_lbe3j")
+
+[node name="ZoneCollision" type="CollisionShape3D" parent="." unique_id=1613720312]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+shape = SubResource("CylinderShape3D_lbe3j")
+
+[node name="CSGZone" type="CSGCylinder3D" parent="." unique_id=190154045]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+material_override = ExtResource("2_i36ro")
+transparency = 0.6
+radius = 2.5
+height = 4.0
+sides = 32
