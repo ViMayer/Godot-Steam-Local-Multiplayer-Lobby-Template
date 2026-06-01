@@ -19,3 +19,8 @@ The default local IP is `127.0.0.1` and the default port is `8080` (You can chan
 * **Hosting**: Simply press "Host Local" in the menu. 
 
 * **Joining**: Type the IP address in the menu and then press "Join". If none is provided, it tries to connect to the default local IP.
+
+# Previews
+
+![In-game Lobby UI](https://raw.githubusercontent.com/ViMayer/Godot-Steam-Local-Multiplayer-Lobby-Template/refs/heads/main/screenshots/in_game_ui.png)
+![First-person Looking At Friend](https://raw.githubusercontent.com/ViMayer/Godot-Steam-Local-Multiplayer-Lobby-Template/refs/heads/main/screenshots/with_other_player.png)
